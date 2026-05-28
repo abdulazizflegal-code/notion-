@@ -52,7 +52,7 @@ def sync_notion_to_google():
         
         # إرسال الموعد إلى تقويم قوقل
         try:
-            calendar_service.events().insert(calendarId='primary', body=event).execute()
+            calendar_service.events().insert(calendarId='abdulazizf.legal@gmail.com', body=event).execute()
             print(f"Successfully synced: {title}")
         except Exception as e:
             print(f"Error syncing {title}: {e}")
