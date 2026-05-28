@@ -1,0 +1,30 @@
+name: Sync Notion to Google Calendar
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # يتم التشغيل تلقائياً كل 15 دقيقة
+  workflow_dispatch: # يتيح لك تشغيل الأتمتة يدوياً في أي وقت
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-core: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install google-auth google-api-python-client notion-client
+
+      - name: Run Sync Script
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        run: |
+          python sync.py
