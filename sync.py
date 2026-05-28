@@ -18,22 +18,24 @@ google_creds = Credentials.from_service_account_info(
 calendar_service = build('calendar', 'v3', credentials=google_creds)
 
 def sync_notion_to_google():
-    # جلب البيانات من جدول نوشن بالطريقة المتوافقة مع التحديثات الجديدة
-    response = notion.databases.retrieve(database_id=NOTION_DATABASE_ID)
-    # نقوم بعمل استعلام للبيانات بداخل قاعدة البيانات
-    query_response = notion.databases.query(database_id=NOTION_DATABASE_ID)
-    results = query_response.get("results", [])
+    try:
+        # الاستعلام الصحيح والمباشر لجلب محتويات الداتا بيس
+        query_response = notion.databases.query(**{"database_id": NOTION_DATABASE_ID})
+        results = query_response.get("results", [])
+    except Exception as e:
+        print(f"Error connecting to Notion Database: {e}")
+        return
     
     print(f"Found {len(results)} items in Notion.")
 
     for page in results:
         properties = page.get("properties", {})
         
-        # استخراج اسم الموعد/الجلسة
+        # استخراج اسم الموعد/الجلسة 
         title_list = properties.get("Name", {}).get("title", [])
         title = title_list[0].get("text", {}).get("content", "موعد بدون عنوان") if title_list else "موعد بدون عنوان"
         
-        # استخراج التاريخ
+        # استخراج التاريخ 
         date_prop = properties.get("Date", {}).get("date", {})
         if not date_prop:
             continue
@@ -48,7 +50,7 @@ def sync_notion_to_google():
             'end': {'date': end_date} if len(end_date) == 10 else {'dateTime': end_date},
         }
         
-        # إرسال الموعد إلى تقويم قوقل الأساسي
+        # إرسال الموعد إلى تقويم قوقل
         try:
             calendar_service.events().insert(calendarId='primary', body=event).execute()
             print(f"Successfully synced: {title}")
